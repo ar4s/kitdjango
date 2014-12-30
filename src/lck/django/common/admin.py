@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2011 by Łukasz Langa
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -39,10 +39,13 @@ from django.db.models.query import QuerySet
 from django.forms.widgets import Select
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.template.loader import render_to_string
-from django.utils.functional import update_wrapper
+try:
+    from functools import update_wrapper
+except ImportError:
+    from django.utils.functional import update_wrapper
 from django.utils.encoding import smart_str
 from django.utils.safestring import mark_safe
-from django.utils.text import get_text_list, truncate_words
+from django.utils.text import get_text_list, Truncator
 from django.utils.translation import ugettext_lazy as _
 try:
     from django.conf.urls import patterns, url
@@ -109,7 +112,7 @@ class ForeignKeySearchInput(ForeignKeyRawIdWidget):
     def label_for_value(self, value):
         key = self.rel.get_related_field().name
         obj = self.rel.to._default_manager.get(**{key: value})
-        return truncate_words(obj, 14)
+        return Truncator(obj).words(14, truncate='...', html=True)
 
     def __init__(self, rel, search_fields, admin_site, attrs=None, hide_id=False, instant_lookup=False):
         self.search_fields = search_fields
@@ -246,7 +249,7 @@ class ForeignKeyAutocompleteModelMixin(object):
         return HttpResponseNotFound()
 
     def get_urls(self):
-        from django.conf.urls.defaults import patterns, url
+        from django.conf.urls import patterns, url
 
         def wrap(view):
             def wrapper(*args, **kwargs):

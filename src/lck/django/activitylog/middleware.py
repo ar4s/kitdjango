@@ -86,7 +86,6 @@ elif ACTIVITYLOG_MODE == 'celery':
 
 
 @maybe_async
-@transaction.commit_on_success
 def update_activity(user_id, address, agent, _now_dt):
     ip, _ = IP.concurrent_get_or_create(
         address=address, fast_mode=serial_execution,
@@ -122,7 +121,6 @@ def update_activity(user_id, address, agent, _now_dt):
 
 
 @maybe_async
-@transaction.commit_on_success
 def update_backlinks(path_info, referrer, current_site):
     backlink, backlink_created = Backlink.concurrent_get_or_create(
         site=current_site,

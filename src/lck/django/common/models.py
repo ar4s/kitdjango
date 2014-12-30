@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2011 by Łukasz Langa
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -57,7 +57,7 @@ try:
 except ImportError:
     now = datetime.now
 
-from lck.django.common import model_is_user, monkeys, nested_commit_on_success
+from lck.django.common import model_is_user
 
 
 EDITOR_TRACKABLE_MODEL = getattr(settings, 'EDITOR_TRACKABLE_MODEL', User)
@@ -190,10 +190,12 @@ class TimeTrackable(db.Model):
         super(TimeTrackable, self).__init__(*args, **kwargs)
         self._update_field_state()
 
-    def save(self, update_modified=True, *args, **kwargs):
+    def save(self, *args, **kwargs):
         """Overrides save(). Adds the ``update_modified=True`` argument.
         If False, the ``modified`` field won't be updated even if there were
         **significant** changes to the model."""
+        update_modified = kwargs.pop('update_modified', True)
+        priority = kwargs.pop('priority', None)
         if self.significant_fields_updated:
             self.cache_version += 1
             if update_modified:
@@ -344,7 +346,7 @@ class SavePrioritized(TimeTrackable):
             tokens.append("{}={}".format(field, priority))
         self.save_priorities = " ".join(tokens)
 
-    def save(self, priority=DEFAULT_SAVE_PRIORITY, *args, **kwargs):
+    def save(self, *args, **kwargs):
         """Overrides save(), adding the ``priority=DEFAULT_SAVE_PRIORITY``
         argument. Non-zero priority changes to **significant** fields are
         annotated and saved with the object. If later on another writer with
@@ -353,6 +355,7 @@ class SavePrioritized(TimeTrackable):
 
         Note: priorities are stored and enforced on a per-field level.
         """
+        priority = kwargs.pop('priority', DEFAULT_SAVE_PRIORITY)
         priorities = self.get_save_priorities()
         if self.significant_fields_updated and \
             priority > self.max_save_priority:
@@ -558,7 +561,6 @@ class WithConcurrentGetOrCreate(object):
     underlying transactions).
     """
     @classmethod
-    @nested_commit_on_success
     def concurrent_get_or_create(cls, **kwargs):
         assert kwargs, ('concurrent_get_or_create() must be passed at least '
                         'one keyword argument')
@@ -589,9 +591,9 @@ class WithConcurrentGetOrCreate(object):
         try:
             params = dict(kwargs)
             params.update(defaults)
-            return cls.objects.create(**params), True
+            with transaction.atomic():
+                return cls.objects.create(**params), True
         except IntegrityError:
-            transaction.commit()
             exc_info = sys.exc_info()
             try:
                 return cls.objects.get(**kwargs), False
