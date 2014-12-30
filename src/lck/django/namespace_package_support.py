@@ -187,13 +187,13 @@ class Translations(dict):
 # PATCH: a more generic find_management_module that supports namespace
 # packages.
 # COMPATIBILITY: Django 1.1.0 - 1.4.0
-django.core.management.find_management_module = \
-    django_core_management__find_management_module
+# django.core.management.find_management_module = \
+#     django_core_management__find_management_module
 
 # PATCH: a more generic _trans object that supports namespace
 # packages.
 # COMPATIBILITY: Django 1.3.0 - 1.4.2
-django.utils.translation._trans = Trans()
+# django.utils.translation._trans = Trans()
 
 # PATCH: django.utils.translation.trans_real.translation() uses globals and is
 # generally tricky to patch. We patch the data structure used for holding
@@ -201,4 +201,4 @@ django.utils.translation._trans = Trans()
 # an object out it and returns early (before raising an exception due to its
 # lack of support for namespace packages).
 # COMPATIBILITY: Django 1.3.0 - 1.4.2
-django.utils.translation.trans_real._translations = Translations()
+#django.utils.translation.trans_real._translations = Translations()

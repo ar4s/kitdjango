@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2011 by Łukasz Langa
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -207,7 +207,7 @@ def remote_addr(request):
             pass
     return result
 
-
+from django.db.transaction import atomic
 def nested_commit_on_success(func):
     """Like commit_on_success, but doesn't commit existing transactions.
 
@@ -222,6 +222,8 @@ def nested_commit_on_success(func):
 
     Taken from: http://djangosnippets.org/snippets/1343/
     """
+    return atomic(func)
+
     _commit_on_success = transaction.commit_on_success(func)
     def _nested_commit_on_success(*args, **kwds):
         if transaction.is_managed():
