@@ -222,6 +222,8 @@ def nested_commit_on_success(func):
 
     Taken from: http://djangosnippets.org/snippets/1343/
     """
+    print(func)
+    # return func
     return atomic(func)
 
     _commit_on_success = transaction.commit_on_success(func)
